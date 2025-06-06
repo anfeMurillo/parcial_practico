@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoviSimple - La odisea de los seis puntos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla de Registro -->
+        <div id="register-screen" class="auth-screen">
+            <h1>MoviSimple</h1>
+            <h2>Registro</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Nombre</label>
+                    <input type="text" id="register-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Correo</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Contraseña</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <button type="submit" class="btn">Registrarse</button>
+            </form>
+            <p>¿Ya tienes una cuenta? <a href="#" id="go-to-login">Iniciar sesión</a></p>
+        </div>
+
+        <!-- Pantalla de Login -->
+        <div id="login-screen" class="auth-screen hidden">
+            <h1>MoviSimple</h1>
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Correo</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn">Iniciar Sesión</button>
+            </form>
+            <p>¿No tienes una cuenta? <a href="#" id="go-to-register">Registrarse</a></p>
+        </div>
+
+        <!-- Pantalla Principal (Mapa) -->
+        <div id="map-screen" class="hidden">
+            <header>
+                <h1>MoviSimple</h1>
+                <div class="user-info">
+                    <span id="user-name">Usuario</span>
+                    <button id="logout-btn" class="btn-small">Cerrar Sesión</button>
+                </div>
+            </header>
+
+            <div class="map-container">
+                <div class="controls">
+                    <div class="select-group">
+                        <label for="origin-select">Origen:</label>
+                        <select id="origin-select">
+                            <option value="" disabled selected>Selecciona origen</option>
+                            <option value="0">Nodo 1</option>
+                            <option value="1">Nodo 2</option>
+                            <option value="2">Nodo 3</option>
+                            <option value="3">Nodo 4</option>
+                            <option value="4">Nodo 5</option>
+                            <option value="5">Nodo 6</option>
+                        </select>
+                    </div>
+                    <div class="select-group">
+                        <label for="destination-select">Destino:</label>
+                        <select id="destination-select">
+                            <option value="" disabled selected>Selecciona destino</option>
+                            <option value="0">Nodo 1</option>
+                            <option value="1">Nodo 2</option>
+                            <option value="2">Nodo 3</option>
+                            <option value="3">Nodo 4</option>
+                            <option value="4">Nodo 5</option>
+                            <option value="5">Nodo 6</option>
+                        </select>
+                    </div>
+                    <button id="calculate-btn" class="btn">Calcular Ruta</button>
+                </div>
+
+                <div class="graph-container">
+                    <canvas id="graph-canvas"></canvas>
+                </div>
+
+                <div class="results hidden" id="results-container">
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="current-node">Nodo: -</span>
+                            <span id="progress-time">Tiempo: 0s</span>
+                        </div>
+                    </div>
+                    <div class="trip-info hidden" id="trip-info">
+                        <h3>Información del Viaje</h3>
+                        <p>Tiempo total: <span id="total-time">0</span> segundos</p>
+                        <p>Costo: $<span id="total-cost">0.00</span></p>
+                        <button id="new-trip-btn" class="btn">Nuevo Viaje</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
