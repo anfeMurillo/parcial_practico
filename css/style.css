@@ -94,3 +94,116 @@ h2 {
 .btn-small:hover {
     background-color: #c0392b;
 }
+
+.auth-screen p {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.auth-screen a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.auth-screen a:hover {
+    text-decoration: underline;
+}
+
+/* Estilos para la pantalla del mapa */
+#map-screen {
+    width: 100%;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-info span {
+    font-weight: bold;
+}
+
+.map-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.select-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.select-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.select-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+#calculate-btn {
+    align-self: flex-end;
+    min-width: 150px;
+}
+
+.graph-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#graph-canvas {
+    width: 100%;
+    height: 100%;
+    background-color: #f9f9f9;
+}
+
+/* Estilos para resultados y animación */
+.results {
+    margin-top: 20px;
+    padding: 15px;
+    border-top: 1px solid #ddd;
+}
+
+.progress-container {
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
