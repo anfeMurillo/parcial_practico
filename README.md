@@ -1,7 +1,7 @@
-# parcial_practico
+# Parcial practico
 
-# Andres Hurtado 408218
+## Andres Hurtado 408218
 
-# Andres Diaz 408129
+## Andres Diaz 408129
 
 Proyecto parcial final
