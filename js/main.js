@@ -337,3 +337,303 @@ const graphManager = {
             this.drawGraph();
         }
     },
+
+    // Calcular y animar la ruta
+    calculateRoute() {
+        if (this.selectedOrigin === null || this.selectedDestination === null) {
+            alert('Por favor, selecciona un origen y un destino');
+            return;
+        }
+        
+        // Mostrar contenedor de resultados
+        document.getElementById('results-container').classList.remove('hidden');
+        document.getElementById('trip-info').classList.add('hidden');
+        
+        // Calcular la ruta usando Dijkstra
+        const { distances, previous } = this.graph.dijkstraSimple(this.selectedOrigin);
+        const path = this.graph.getPath(previous, this.selectedDestination);
+        
+        // Verificar si hay una ruta válida
+        if (path.length <= 1 || path[0] !== this.selectedOrigin) {
+            alert('No hay una ruta disponible entre estos nodos');
+            return;
+        }
+        
+        // Iniciar animación
+        this.animateRoute(path, distances[this.selectedDestination]);
+    },
+    
+    // Animar la ruta
+    animateRoute(path, totalTime) {
+        this.animationInProgress = true;
+        
+        // Reiniciar la barra de progreso
+        const progressBar = document.getElementById('progress');
+        progressBar.style.width = '0%';
+        
+        // Preparar información de la ruta
+        let currentSegment = 0;
+        let elapsedTime = 0;
+        let segmentStartTime = 0;
+        let segmentDuration = 0;
+        
+        // Calcular la duración de cada segmento
+        const segmentDurations = [];
+        for (let i = 0; i < path.length - 1; i++) {
+            const u = path[i];
+            const v = path[i + 1];
+            const edge = this.graph.adjacencyList[u].find(e => e.node === v);
+            segmentDurations.push(edge.weight);
+        }
+        
+        // Función para actualizar la animación
+        const updateAnimation = () => {
+            if (currentSegment >= path.length - 1) {
+                // Animación completa
+                this.animationInProgress = false;
+                
+                // Mostrar información del viaje
+                document.getElementById('total-time').textContent = totalTime;
+                document.getElementById('total-cost').textContent = (totalTime * RATE_PER_SECOND).toFixed(2);
+                document.getElementById('trip-info').classList.remove('hidden');
+                
+                return;
+            }
+            
+            // Calcular tiempo transcurrido
+            const now = Date.now();
+            const deltaTime = (now - segmentStartTime) / 1000 * ANIMATION_SPEED_FACTOR;
+            
+            if (deltaTime >= segmentDuration) {
+                // Pasar al siguiente segmento
+                currentSegment++;
+                elapsedTime += segmentDuration;
+                
+                if (currentSegment < path.length - 1) {
+                    segmentStartTime = now;
+                    segmentDuration = segmentDurations[currentSegment];
+                    
+                    // Actualizar nodo actual
+                    document.getElementById('current-node').textContent = `Nodo: ${path[currentSegment] + 1}`;
+                }
+            }
+            
+            // Actualizar barra de progreso
+            const progress = ((elapsedTime + Math.min(deltaTime, segmentDuration)) / totalTime) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Actualizar tiempo
+            const currentTime = elapsedTime + Math.min(deltaTime, segmentDuration);
+            document.getElementById('progress-time').textContent = `Tiempo: ${currentTime.toFixed(1)}s`;
+            
+            // Redibujar el grafo con la ruta resaltada
+            this.drawGraphWithPath(path, currentSegment, deltaTime / segmentDuration);
+            
+            // Continuar la animación
+            if (this.animationInProgress) {
+                requestAnimationFrame(updateAnimation);
+            }
+        };
+        
+        // Iniciar la animación
+        segmentStartTime = Date.now();
+        segmentDuration = segmentDurations[0];
+        document.getElementById('current-node').textContent = `Nodo: ${path[0] + 1}`;
+        requestAnimationFrame(updateAnimation);
+    },
+    
+    // Dibujar el grafo con la ruta resaltada
+    drawGraphWithPath(path, currentSegment, segmentProgress) {
+        // Limpiar canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Dibujar todas las aristas
+        for (const [u, v, weight] of this.edges) {
+            this.drawEdge(u, v, weight);
+        }
+        
+        // Dibujar aristas de la ruta resaltadas
+        for (let i = 0; i < path.length - 1; i++) {
+            const u = path[i];
+            const v = path[i + 1];
+            
+            const start = this.nodePositions[u];
+            const end = this.nodePositions[v];
+            
+            // Dibujar línea resaltada
+            this.ctx.beginPath();
+            this.ctx.moveTo(start.x, start.y);
+            this.ctx.lineTo(end.x, end.y);
+            this.ctx.lineWidth = 4;
+            this.ctx.strokeStyle = '#f39c12';
+            this.ctx.stroke();
+        }
+        
+        // Dibujar nodos
+        for (let i = 0; i < NODES_COUNT; i++) {
+            // Determinar el color del nodo
+            let color = '#3498db'; // Color por defecto
+            
+            if (path.includes(i)) {
+                color = '#f39c12'; // Naranja para nodos en la ruta
+            }
+            
+            if (i === this.selectedOrigin) {
+                color = '#2ecc71'; // Verde para origen
+            } else if (i === this.selectedDestination) {
+                color = '#e74c3c'; // Rojo para destino
+            }
+            
+            const { x, y } = this.nodePositions[i];
+            const radius = 20;
+            
+            // Dibujar círculo
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            this.ctx.fillStyle = color;
+            this.ctx.fill();
+            
+            // Dibujar borde
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = '#2c3e50';
+            this.ctx.stroke();
+            
+            // Dibujar número del nodo
+            this.ctx.font = 'bold 16px Arial';
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText((i + 1).toString(), x, y);
+        }
+        
+        // Dibujar vehículo en movimiento
+        if (currentSegment < path.length - 1) {
+            const u = path[currentSegment];
+            const v = path[currentSegment + 1];
+            
+            const start = this.nodePositions[u];
+            const end = this.nodePositions[v];
+            
+            // Calcular posición actual
+            const x = start.x + (end.x - start.x) * segmentProgress;
+            const y = start.y + (end.y - start.y) * segmentProgress;
+            
+            // Dibujar vehículo
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            this.ctx.fillStyle = '#9b59b6';
+            this.ctx.fill();
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = '#8e44ad';
+            this.ctx.stroke();
+        }
+    },
+    
+    // Reiniciar la interfaz para un nuevo viaje
+    resetInterface() {
+        this.selectedOrigin = null;
+        this.selectedDestination = null;
+        document.getElementById('origin-select').value = '';
+        document.getElementById('destination-select').value = '';
+        document.getElementById('results-container').classList.add('hidden');
+        document.getElementById('trip-info').classList.add('hidden');
+        this.drawGraph();
+    }
+};
+
+// Inicialización de la aplicación
+document.addEventListener('DOMContentLoaded', () => {
+    // Comprobar si hay un usuario logueado
+    const currentUser = userManager.getCurrentUser();
+    if (currentUser) {
+        showMapScreen(currentUser);
+    }
+    
+    // Event listeners para formularios
+    document.getElementById('register-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const name = document.getElementById('register-name').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        
+        const result = userManager.register(name, email, password);
+        
+        if (result.success) {
+            const loginResult = userManager.login(email, password);
+            showMapScreen(loginResult.user);
+        } else {
+            alert(result.message);
+        }
+    });
+    
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        const result = userManager.login(email, password);
+        
+        if (result.success) {
+            showMapScreen(result.user);
+        } else {
+            alert(result.message);
+        }
+    });
+    
+    // Event listeners para navegación
+    document.getElementById('go-to-login').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('register-screen').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+    });
+    
+    document.getElementById('go-to-register').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('register-screen').classList.remove('hidden');
+    });
+    
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        userManager.logout();
+        document.getElementById('map-screen').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+    });
+    
+    // Event listeners para selección de nodos
+    document.getElementById('origin-select').addEventListener('change', (e) => {
+        if (e.target.value !== '') {
+            graphManager.selectOrigin(e.target.value);
+        }
+    });
+    
+    document.getElementById('destination-select').addEventListener('change', (e) => {
+        if (e.target.value !== '') {
+            graphManager.selectDestination(e.target.value);
+        }
+    });
+    
+    // Event listener para calcular ruta
+    document.getElementById('calculate-btn').addEventListener('click', () => {
+        graphManager.calculateRoute();
+    });
+    
+    // Event listener para nuevo viaje
+    document.getElementById('new-trip-btn').addEventListener('click', () => {
+        graphManager.resetInterface();
+    });
+});
+
+// Mostrar la pantalla del mapa
+function showMapScreen(user) {
+    document.getElementById('register-screen').classList.add('hidden');
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('map-screen').classList.remove('hidden');
+    
+    document.getElementById('user-name').textContent = user.name;
+    
+    // Inicializar el grafo
+    graphManager.init();
+}
+
